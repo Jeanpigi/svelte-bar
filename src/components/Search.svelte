@@ -1,12 +1,10 @@
 <script>
-    export let handleSearch;
+    export let searchProduct;
 </script>
 
 <style>
     .search {
-        background-color: #f7f7f7;
         color: #000000;
-        border: 1px solid;
         width: max-content;
         border-radius: 10px;
     }
@@ -24,5 +22,5 @@
     <input
         type="text"
         placeholder="Buscar productos"
-        on:keyup={(event) => handleSearch(event)} />
+        on:keyup={searchProduct} />
 </div>

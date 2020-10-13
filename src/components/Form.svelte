@@ -1,7 +1,7 @@
 <script>
     import { db } from "../lib/firebase";
     import Search from "./Search.svelte";
-
+    import Card from "./Card.svelte";
     import toastr from "toastr";
 
     import { user } from "../lib/store";
@@ -13,24 +13,32 @@
     };
 
     let products = [];
-    let searchProducts = products;
+    let searchProduct = "";
 
     let editStatus = false;
     let currentId;
 
-    const formatter = new Intl.NumberFormat("en-CO", {
-        style: "currency",
-        currency: "COP",
-    });
+    if (searchProduct !== "") {
+        db.collection("productos")
+            .where("name", "==", searchProduct)
+            .get((querySnapshot) => {
+                let docs = [];
+                querySnapshot.forEach((doc) => {
+                    docs.push({ ...doc.data(), id: doc.id });
+                });
 
-    db.collection("productos").onSnapshot((querySnapshot) => {
-        let docs = [];
-        querySnapshot.forEach((doc) => {
-            docs.push({ ...doc.data(), id: doc.id });
+                products = [...docs];
+            });
+    } else {
+        db.collection("productos").onSnapshot((querySnapshot) => {
+            let docs = [];
+            querySnapshot.forEach((doc) => {
+                docs.push({ ...doc.data(), id: doc.id });
+            });
+
+            products = [...docs];
         });
-
-        products = [...docs];
-    });
+    }
 
     const addProduct = async () => {
         try {
@@ -107,13 +115,6 @@
             price: 0,
         };
     };
-
-    const handleSearch = (event) => {
-        const value = event.target.value;
-        searchProducts = products.filter((product) =>
-            product.products.toLowerCase().includes(value.toLowerCase())
-        );
-    };
 </script>
 
 <style>
@@ -123,39 +124,6 @@
         grid-row-gap: 10px;
         grid-auto-flow: row;
     }
-
-    .form_card {
-        display: grid;
-        justify-content: center;
-        margin: 10px;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0px 6px 18px -9px rgba(0, 0, 0, 0.75);
-        transition: transform 100ms ease-in;
-        cursor: pointer;
-    }
-
-    .form_card:hover {
-        transform: scale(1.07);
-    }
-
-    .form_card_info {
-        margin-top: -9px;
-        border-radius: 10px;
-        padding: 20px;
-        padding-top: 20px;
-    }
-
-    .form_card_info > h5 {
-        font-size: 18px;
-        font-weight: 600;
-    }
-
-    .form_card_info > p {
-        font-size: 14px;
-        font-weight: 300;
-    }
-
     .form_container_row1 {
         background-color: #f7f7f7;
         color: #000000;
@@ -186,67 +154,53 @@
         justify-content: center;
         display: grid;
     }
-
-    .form_container_row3 {
-        display: grid;
-    }
 </style>
 
 <div class="form">
     <div class="form_container">
-        <div class="form_container_row1">
-            <form on:submit|preventDefault={handleSubmit}>
-                <input
-                    type="text"
-                    bind:value={product.name}
-                    placeholder="escribe un producto" />
-                <textarea
-                    name="description"
-                    id="description"
-                    bind:value={product.desc}
-                    rows="7"
-                    cols="50"
-                    placeholder="describe la descriccion" />
+        {#if $user.email === 'test@gmail.com'}
+            <div class="form_container_row1">
+                <form on:submit|preventDefault={handleSubmit}>
+                    <input
+                        type="text"
+                        bind:value={product.name}
+                        placeholder="escribe un producto" />
+                    <textarea
+                        name="description"
+                        id="description"
+                        bind:value={product.desc}
+                        rows="7"
+                        cols="50"
+                        placeholder="describe la descriccion" />
 
-                <input
-                    type="number"
-                    bind:value={product.price}
-                    placeholder="escribe el precio" />
-                <button
-                    class="form_button"
-                    disabled={$user.email !== 'test@gmail.com'}>
-                    {#if !editStatus}Guardar{:else}Actualizar{/if}
-                </button>
-                {#if editStatus}
+                    <input
+                        type="number"
+                        bind:value={product.price}
+                        placeholder="escribe el precio" />
                     <button
                         class="form_button"
-                        on:click={onCancel}>Cancel</button>
-                {/if}
-            </form>
-        </div>
+                        disabled={$user.email !== 'test@gmail.com'}>
+                        {#if !editStatus}Guardar{:else}Actualizar{/if}
+                    </button>
+                    {#if editStatus}
+                        <button
+                            class="form_button"
+                            on:click={onCancel}>Cancel</button>
+                    {/if}
+                </form>
+            </div>
+        {:else}
+            <div>
+                <h1>Todos los productos</h1>
+            </div>
+        {/if}
 
         <div class="form_container_row2">
-            <Search {handleSearch} />
+            <Search {searchProduct} />
         </div>
 
-        <div class="form_container_row3">
-            {#each products as product}
-                <div class="form_card">
-                    <div class="form_card_info">
-                        <h5>{product.name}</h5>
-                        <p>{product.desc}</p>
-                        <p>{formatter.format(product.price)}</p>
-                        <div>
-                            <button
-                                on:click={deleteProduct(product.id)}
-                                disabled={$user.email !== 'test@gmail.com'}>
-                                🗑
-                            </button>
-                            <button on:click={editProduct(product)}>🖊</button>
-                        </div>
-                    </div>
-                </div>
-            {/each}
-        </div>
+        {#each products as product}
+            <Card {product} {deleteProduct} {editProduct} />
+        {/each}
     </div>
 </div>
