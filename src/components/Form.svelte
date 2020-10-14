@@ -1,7 +1,9 @@
 <script>
+    import { onMount } from "svelte";
     import { db } from "../lib/firebase";
     import Search from "./Search.svelte";
     import Card from "./Card.svelte";
+    import { fade } from "svelte/transition";
     import toastr from "toastr";
 
     import { user } from "../lib/store";
@@ -14,23 +16,13 @@
 
     let products = [];
     let searchProduct = "";
+    let result = [];
 
     let editStatus = false;
     let currentId;
 
-    if (searchProduct !== "") {
-        db.collection("productos")
-            .where("name", "==", searchProduct)
-            .get((querySnapshot) => {
-                let docs = [];
-                querySnapshot.forEach((doc) => {
-                    docs.push({ ...doc.data(), id: doc.id });
-                });
-
-                products = [...docs];
-            });
-    } else {
-        db.collection("productos").onSnapshot((querySnapshot) => {
+    onMount(async () => {
+        await db.collection("productos").onSnapshot((querySnapshot) => {
             let docs = [];
             querySnapshot.forEach((doc) => {
                 docs.push({ ...doc.data(), id: doc.id });
@@ -38,7 +30,7 @@
 
             products = [...docs];
         });
-    }
+    });
 
     const addProduct = async () => {
         try {
@@ -160,23 +152,22 @@
     <div class="form_container">
         {#if $user.email === 'test@gmail.com'}
             <div class="form_container_row1">
-                <form on:submit|preventDefault={handleSubmit}>
+                <form on:submit|preventDefault={handleSubmit} transition:fade>
                     <input
                         type="text"
                         bind:value={product.name}
-                        placeholder="escribe un producto" />
+                        placeholder="Escribe un producto" />
                     <textarea
                         name="description"
                         id="description"
                         bind:value={product.desc}
                         rows="7"
                         cols="50"
-                        placeholder="describe la descriccion" />
-
-                    <input
-                        type="number"
-                        bind:value={product.price}
-                        placeholder="escribe el precio" />
+                        placeholder="Escribe la descripción" />
+                    <br />
+                    <br />
+                    <label for="precio">Precio:</label>
+                    <input type="number" bind:value={product.price} />
                     <button
                         class="form_button"
                         disabled={$user.email !== 'test@gmail.com'}>

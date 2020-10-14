@@ -1,6 +1,6 @@
 <script>
     import { user } from "../lib/store";
-    import Form from "./Form.svelte";
+    import Form from "../components/Form.svelte";
 </script>
 
 <style>

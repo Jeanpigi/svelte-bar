@@ -34,7 +34,7 @@
                         showMethod: "fadeIn",
                         hideMethod: "fadeOut",
                     });
-                    navigate("/dashboard");
+                    navigate("/dashBoard", { replace: true });
                 }
             });
         } catch (error) {
@@ -55,7 +55,7 @@
                 showMethod: "fadeIn",
                 hideMethod: "fadeOut",
             });
-            navigate("/");
+            navigate("/", { replace: true });
         }
     };
 </script>

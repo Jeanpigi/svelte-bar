@@ -1,8 +1,12 @@
 <script>
 	import { Router, Link, Route } from "svelte-routing";
-	import Register from "./components/Register.svelte";
-	import Dashboard from "./components/DashBoard.svelte";
-	import Login from "./components/Login.svelte";
+	import Home from "./pages/Home.svelte";
+	import Register from "./pages/Register.svelte";
+	import DashBoard from "./pages/DashBoard.svelte";
+	import Login from "./pages/Login.svelte";
+	import NotFound from "./pages/NotFound.svelte";
+
+	export let url = "";
 
 	import { user } from "./lib/store.js";
 	import { auth } from "./lib/firebase.js";
@@ -31,6 +35,19 @@
 </script>
 
 <style>
+	:global(body) {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+			Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	}
+
+	:global(a) {
+		color: rgb(150, 15, 5);
+		text-decoration: none;
+		font-weight: 400em;
+	}
 	.app_header {
 		display: grid;
 		justify-items: center;
@@ -42,32 +59,13 @@
 
 	.app_header_nav {
 		display: grid;
-
 		grid-template-columns: 100px 100px 100px;
 		column-gap: 10px;
-	}
-
-	.app_header_nav > li {
-		color: white;
-		text-decoration: none;
-	}
-
-	.app_home {
-		padding: 10px;
-	}
-
-	.app_home_container {
-		display: grid;
-		justify-content: center;
-	}
-
-	.app_home_container > h1 {
-		justify-self: center;
 	}
 </style>
 
 <main>
-	<Router>
+	<Router {url}>
 		<div class="app_header">
 			<ul class="app_header_nav">
 				<li>
@@ -75,7 +73,7 @@
 				</li>
 				{#if $user.loggedIn}
 					<li>
-						<Link to="dashboard" {getProps}>Dashboard</Link>
+						<Link to="dashBoard" {getProps}>Dashboard</Link>
 					</li>
 					<li>
 						<a class="inactive" href="/" on:click={handleLogOut}>
@@ -92,20 +90,14 @@
 				{/if}
 			</ul>
 		</div>
-
-		<Route path="login" component={Login} />
-		<Route path="register" component={Register} />
-		<Route path="dashboard" component={Dashboard} />
-		<Route path="/">
-			<div class="app_home">
-				<div class="app_home_container">
-					<h1>Bienvenido a tu Tienda</h1>
-					<p>
-						La vista de los contenidos está protegida, deberás
-						registrarte o iniciar sesión en tu cuenta
-					</p>
-				</div>
-			</div>
-		</Route>
+		<div>
+			<Route path="login" component={Login} />
+			<Route path="register" component={Register} />
+			<Route path="dashBoard" component={DashBoard} />
+			<Route path="*" component={NotFound} />
+			<Route path="/">
+				<Home />
+			</Route>
+		</div>
 	</Router>
 </main>
