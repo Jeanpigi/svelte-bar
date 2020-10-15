@@ -22,5 +22,5 @@
     <input
         type="text"
         placeholder="Buscar productos"
-        bind:value={searchProduct} />
+        on:keyup={searchProduct} />
 </div>

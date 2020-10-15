@@ -16,13 +16,30 @@
 
     let products = [];
     let searchProduct = "";
-    let result = [];
 
     let editStatus = false;
     let currentId;
 
-    onMount(async () => {
-        await db.collection("productos").onSnapshot((querySnapshot) => {
+    if (searchProduct !== "") {
+        db.collection("productos")
+            .where("name", "==", searchProduct)
+            .get()
+            .then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                    console.log("No matching documents.");
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    console.log(doc.id, "=>", doc.data());
+                });
+                products = [...doc.data()];
+            })
+            .catch((err) => {
+                console.log("Error getting documents", err);
+            });
+    } else {
+        db.collection("productos").onSnapshot((querySnapshot) => {
             let docs = [];
             querySnapshot.forEach((doc) => {
                 docs.push({ ...doc.data(), id: doc.id });
@@ -30,7 +47,7 @@
 
             products = [...docs];
         });
-    });
+    }
 
     const addProduct = async () => {
         try {
